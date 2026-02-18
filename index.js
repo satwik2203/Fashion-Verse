@@ -1,23 +1,68 @@
-const orderRoutes = require("./routes/orderRoutes");
-const productRoutes = require("./routes/productRoutes");
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const app = express();
+class Node {
+	/// value;
+	/// next;
 
-app.use(cors());
-app.use(express.json());
-app.use("/api/orders", orderRoutes);
-app.use("/api/products", productRoutes);
-mongoose.connect("mongodb+srv://satwik:2205@fashion.lgx8msp.mongodb.net/?appName=Fashion")
-.then(() => console.log("MongoDB Connected"))
-.catch(err => console.log(err));
+	constructor(value) {
+		this.value = value;
 
+		// TODO: Remove this when targeting Node.js 12.
+		this.next = undefined;
+	}
+}
 
-app.get("/", (req, res) => {
-  res.send("Inventory Backend Running");
-});
+class Queue {
+	// TODO: Use private class fields when targeting Node.js 12.
+	// #_head;
+	// #_tail;
+	// #_size;
 
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
-});
+	constructor() {
+		this.clear();
+	}
+
+	enqueue(value) {
+		const node = new Node(value);
+
+		if (this._head) {
+			this._tail.next = node;
+			this._tail = node;
+		} else {
+			this._head = node;
+			this._tail = node;
+		}
+
+		this._size++;
+	}
+
+	dequeue() {
+		const current = this._head;
+		if (!current) {
+			return;
+		}
+
+		this._head = this._head.next;
+		this._size--;
+		return current.value;
+	}
+
+	clear() {
+		this._head = undefined;
+		this._tail = undefined;
+		this._size = 0;
+	}
+
+	get size() {
+		return this._size;
+	}
+
+	* [Symbol.iterator]() {
+		let current = this._head;
+
+		while (current) {
+			yield current.value;
+			current = current.next;
+		}
+	}
+}
+
+module.exports = Queue;
